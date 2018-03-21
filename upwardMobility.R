@@ -8,18 +8,18 @@
 #---
 #Overview
 #```{r}
-#External Requirements: None - all computers used standard R libraries
+#External Requirements: None - all computations used standard R libraries
 #```
 
 #```{r}
 rm(list=ls()) # clear global environment
 getwd() # double check wd
 
-mobility = read.csv("mobility5.csv", TRUE, ",")
+mobility = read.csv("http://dept.stat.lsa.umich.edu/~bbh/s485/data/mobility5.csv")
 class(mobility) #turns the data 'mobility' into a dataframe
 #```
 
-#Confidence Intervals
+#Function to Generate Confidence Intervals using the Wilson Method
 #```{r}
 wilsonCI = function(n,p) {
   k = qnorm(0.975)
@@ -27,9 +27,10 @@ wilsonCI = function(n,p) {
   lowerbound = (n*p + (k^2)/2)/(n+k^2) - (k*n^(1/2)*((p*q+(k^2)/(4*n))^(1/2)))/(n+k^2)
   upperbound = (n*p + (k^2)/2)/(n+k^2) + (k*n^(1/2)*((p*q+(k^2)/(4*n))^(1/2)))/(n+k^2)
   CI = c(lowerbound, upperbound)
-  #print(CI) #prints the CI
+  print(CI) #prints the CI
 }
 
+#creating dataframes
 zone = mobility$zone
 n.lowstart = mobility$n.lowstart
 p.upmover = mobility$p.upmover
@@ -42,7 +43,6 @@ for (i in 1:nrow(mobility)) {
 }
 #```
 
-#-------------------------------------------------
 #likelihood ratio test multiple parameters
 
 #p_upmover and n_lowstart are vectors for proportions for
