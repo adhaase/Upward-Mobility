@@ -8,4 +8,4 @@ Interpretation of the upward mobility relationship will formulate from two main 
 
 # Statistical Methods used in analysis:
 * Created 95% confidence intervals utilizing the Wilson method
-* Conducted hypothesis testing via the Likelihood Ratio test (as the dataset provided full binomial data, something like ANOVA/Tukey, etc. would have been unncessary)
+* Conducted hypothesis testing via the Likelihood Ratio test (as the dataset provided full binomial data, something like ANOVA/Tukey, etc. would have been unnecessary)
