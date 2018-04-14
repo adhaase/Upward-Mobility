@@ -1,0 +1,145 @@
+---
+title: "Upward Mobility - Model Validation"
+author: "Alex Haase"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+```{r}
+
+rm(list=ls()) # clear global environment
+getwd() # double check wd
+
+mobility = read.csv('http://dept.stat.lsa.umich.edu/~bbh/s485/data/Mobility.csv', row.names = 1)
+
+#************ TRAIN DATA ************
+
+# 50% of the sample size - for the test sample
+sample_size = floor(0.50 * nrow(mobility))
+
+# set the seed to make the partition reproductible
+set.seed(123)
+train_ind = sample(seq_len(nrow(mobility)), size = sample_size)
+
+train = mobility[train_ind, ]
+test = mobility[-train_ind, ]
+
+#nrow(train) #370 rows
+#nrow(test) #371 rows
+
+#nrow(train$N.child)
+#nrow(test$N.child)
+
+write.csv(test, file="testdata.csv", row.names=T) # creates file: testdata.csv which is a separate file for the test data
+
+#model.frame(fitted_model)
+#produces a data frame for the model without missing values
+Income_traindata = model.frame(train$p.upmover~train$Income)
+Gini_traindata = model.frame(train$p.upmover~train$Gini)
+Seg_poverty_traindata = model.frame(train$p.upmover~train$Seg_poverty)
+Seg_racial_traindata = model.frame(train$p.upmover~train$Seg_racial)
+Seg_income_traindata = model.frame(train$p.upmover~train$Seg_income)
+
+#Likelihood Ratio Test
+#choosing significance: 0.05
+
+SF.upmover = with(train, N.child * prop.lowstart * cbind(S=train$p.upmover, F=(1-train$p.upmover)))
+SF.upmover = round(SF.upmover)
+
+fit1 = glm(SF.upmover ~ 1, family = binomial('logit'), data = train)
+fit2 = glm(SF.upmover ~ train$Income, family = binomial('logit'), data = train)
+fit3 = glm(SF.upmover ~ train$Income * train$Gini, family = binomial('logit'), data = train)
+fit4 = glm(SF.upmover ~ train$Income * train$Gini * train$Seg_poverty, family = binomial('logit'), data = train)
+fit5 = glm(SF.upmover ~ train$Income * train$Gini * train$Seg_poverty * train$Seg_racial, family = binomial('logit'), data = train)
+fit6 = glm(SF.upmover ~ train$Income * train$Gini * train$Seg_poverty * train$Seg_racial * train$Seg_income, family = binomial('logit'), data = train)
+
+anova(fit1, fit2, fit3, fit4, fit5, test = "LRT")
+
+#model with the best fit:
+#fit 2: Income with Gini
+
+#Generate Residual Plots
+plot(fit2)
+
+#Modeling with natural spline bases
+install.packages("dplyr")
+install.packages("Rcpp")
+install.packages("DAAG")
+dat0 = dplyr::filter(train)
+#ns_mods = paste("SF.upmover ~ ns(train$Income, df=", 1:4, ")")
+
+library(splines)
+library(DAAG)
+library(MASS)
+library(boot)
+
+crossval = cv.glm(train, fit2)
+
+anova(fit2, crossval, test = "LRT")
+
+#SF.upmover and train$Income
+#SF.upmover
+#train$Income #length = 370
+length(train$Income)
+dim(SF.upmover) #dim = 370 2
+
+#SF.upmover[,'S']
+#SF.upmover[,'F']
+
+#using R spline() function
+splineOutput = spline(x=SF.upmover[,'S'], y=train$Income)
+
+#splineOutput$x #length = 792
+#splineOutput$y # length = 792
+
+#appending the above spline outputs to fit train data length
+spline1 = splineOutput$x[2:371]
+spline2 = splineOutput$y[2:371]
+
+class(spline1)
+class(SF.upmover[,'S'])
+
+fitSx = glm(SF.upmover ~ 1, family = binomial('logit'), data = train)
+fitSy = glm(SF.upmover ~ train$Income, family = binomial('logit'), data = train)
+
+anova(fitSx, fitSy, test = "LRT")
+
+#************ TEST DATA ************
+
+testdata = read.csv("testdata.csv", TRUE, ",")
+#testdata
+
+#hand selected: Commute and Local_gov_spending
+
+Commute_testdata = model.frame(testdata$p.upmover~testdata$Commute)
+Local_gov_spending_testdata = model.frame(testdata$p.upmover~testdata$Local_gov_spending)
+
+# LR-test
+#choosing significance: 0.05
+
+testdata = na.omit(testdata)
+p.upmover2 = na.omit(testdata$p.upmover)
+Commute = na.omit(testdata$Commute)
+Local_gov_spending = na.omit(testdata$Local_gov_spending)
+
+
+SF.upmover2 = with(testdata, N.child * prop.lowstart * cbind(S=p.upmover2, F=(1-p.upmover2)))
+SF.upmover2 = round(SF.upmover2)
+dim(SF.upmover2)
+
+
+fit1b = glm(SF.upmover2 ~ 1, family = binomial('logit'), data = testdata)
+fit2b = glm(SF.upmover2 ~ Commute, family = binomial('logit'), data = testdata)
+fit3b = glm(SF.upmover2 ~ Commute * Local_gov_spending, family = binomial('logit'), data = testdata)
+
+logit_mod = anova(fit1b, fit2b, fit3b, test = "LRT")
+logit_mod
+
+#each of the variables were significant, therefore, look at coefficients via Holm-Bonferroni method 
+#newfit = update(logit_mod, data = testdata)
+#coeffs = coef(summary(newfit))
+#coeffs[, "Pr(>|z|)"] = p.adjust(coeffs[, "Pr(>|z|)"], "holm")
+#coeffs
+```
+
