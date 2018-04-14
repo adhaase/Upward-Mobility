@@ -3,6 +3,7 @@
 ## 0. Contents
 * Two main R scripts: Region Analysis & Model Validation (test/training sets)
 * second data set based on: Chetty, Ehrlinger, Mitchum, & Dweck Study
+Created two R scripts that analyzed the relationship between subjects who grew up in lower-income families on the basis of location and proportion of individuals reporting incomes in the top quintile by age 30; the second script focuses on individual elements (Income, Education, etc.) that potentially contribute to economic mobility - models have been fit for a subset of these variables, training/test data sets used for analysis.
 
 ## I. Content Overview
 ### I.1 - Region Analysis
@@ -12,9 +13,6 @@ Interpretation of the upward mobility relationship will formulate from two main 
 
 ### I.2 - Model Validation
 Analyzed which characteristics of communities that contribute to economic upward mobility. Used data assembled by Chetty and coauthors (2014) to predict the likelihood of "upmoving" by commuting zone, using prior information about those commuting zones that's available in Chetty et al's publicly released data. (EMD study)
-
-## II. The Potential of Upward Mobility in Lower (income) Class Adults
-Created an R script that analyzed the relationship between subjects who grew up in lower-income families on the basis of location and proportion of individuals reporting incomes in the top quintile by age 30.
 
 ## Statistical Methods used in analysis:
 * Created 95% confidence intervals utilizing the Wilson method
